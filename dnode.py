@@ -1,4 +1,4 @@
-# dnode v0.1
+# dnode v0.11
 
 import json
 import pprint
@@ -76,6 +76,25 @@ class DNode(object):
             data = json.loads(data)
         self.data = data
 
+    def clear(self):
+        for key, value in self.data.iteritems():
+            if isinstance(value, DNode):
+                value.clear()
+                continue
+
+            if isinstance(value, str):
+                null_value = ''
+            elif isinstance(value, int):
+                null_value = 0
+            elif isinstance(value, list):
+                null_value = []
+            elif isinstance(value, dict):
+                null_value = {}
+            else:
+                null_value = None
+
+            self.data[key] = null_value
+
 
 if __name__ == '__main__':
 
@@ -103,7 +122,7 @@ if __name__ == '__main__':
 
     print obj.a
     print obj.b.b1
-    print obj.c.c2.c22
+    print obj.c.c2
     print obj.d[1]
     print obj.e[1].ee
     print obj.f[0][0]
@@ -132,5 +151,11 @@ if __name__ == '__main__':
     obj.g[0][0].gg = 'change_g'
     print obj.g[0][0].gg
 
-    print '========================================'
+    print '============== test clear ==============='
+
+    obj.clear()
+
+    obj.pprint()
+
+    print '========================================='
 
