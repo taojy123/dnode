@@ -1,3 +1,4 @@
+# dnode v0.1
 
 import json
 import pprint
@@ -8,8 +9,6 @@ class DNode(object):
 
     def __init__(self, data):
         self.load_data(data)
-        for field in self.fields:
-            getattr(self, field)
 
     def __repr__(self):
         return '<DNode: %s>' % self.json
@@ -39,6 +38,14 @@ class DNode(object):
 
         self.data[key] = value
 
+    @property
+    def fields(self):
+        return self.data.keys()
+
+    @property
+    def json(self):
+        return self._dumps()
+
     def _get_node_value(self, value):
 
         if isinstance(value, dict):
@@ -54,15 +61,14 @@ class DNode(object):
     def _dumps(self, indent=None):
         return json.dumps(self, indent=indent, default=lambda obj: obj.data)
 
-    @property
-    def fields(self):
-        return self.data.keys()
-
-    @property
-    def json(self):
-        return self._dumps()
+    def _touch_all_fields(self):
+        for field in self.fields:
+            value = getattr(self, field)
+            if isinstance(value, DNode):
+                value._touch_all_fields()
 
     def pprint(self):
+        self._touch_all_fields()
         pprint.pprint(self.data)
 
     def load_data(self, data):
