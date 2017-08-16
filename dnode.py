@@ -1,108 +1,74 @@
 
 import json
+import pprint
 
 
 class DNode(object):
     data = {}
-    parent = None
-    name = None
-    position = None
 
-    def __init__(self, data, parent=None, name=None, position=None):
-
-        self.data = data
-        self.parent = parent
-        self.name = name
-        self.position = position
+    def __init__(self, data):
+        self.load_data(data)
+        for field in self.fields:
+            getattr(self, field)
 
     def __repr__(self):
-        return '<DNode: %s>' % self.dumps()
+        return '<DNode: %s>' % self.json
 
     def __str__(self):
-        return '<DNode: %s>' % self.dumps()
+        return '<DNode: %s>' % self.json
 
     def __getattr__(self, item):
-        data = self.data.get(item)
+        if item == 'data':
+            raise AttributeError
 
-        val = self._get_node_value(data, item)
+        if item not in self.fields:
+            raise AttributeError
+
+        value = self.data[item]
+
+        val = self._get_node_value(value)
+
+        self.data[item] = val
 
         return val
 
     def __setattr__(self, key, value):
 
-        if key not in self.data:
+        if key == 'data' or key not in self.fields:
             return super(DNode, self).__setattr__(key, value)
 
-        if isinstance(value, DNode):
-            value = value.data
         self.data[key] = value
 
-        if not self.parent:
-            return
+    def _get_node_value(self, value):
 
-        if self.position is None:
-            self.parent.data[self.name] = self.data
+        if isinstance(value, dict):
+            return DNode(value)
+        elif isinstance(value, list):
+            rs = []
+            for v in value:
+                rs.append(self._get_node_value(v))
+            return rs
         else:
-            self.parent.data[self.name][self.position] = self.data
+            return value
 
-    def _get_node_value(self, data, name, position=None):
-
-        if isinstance(data, dict):
-            return DNode(data, self, name, position)
-        elif isinstance(data, list):
-            dl = DNodeList()
-            dl.parent = self
-            dl.name = name
-            position = 0
-            for d in data:
-                dl.append(self._get_node_value(d, name, position))
-                position += 1
-            return dl
-        else:
-            return data
-
-    def dumps(self):
-        return json.dumps(self.data, default=lambda obj: obj.data)
+    def _dumps(self, indent=None):
+        return json.dumps(self, indent=indent, default=lambda obj: obj.data)
 
     @property
     def fields(self):
         return self.data.keys()
 
-
-class DNodeList(list):
-
-    parent = None
-    name = None
-    position = None
-
-    def __init__(self, value=None):
-        value = value or []
-        super(DNodeList, self).__init__(value)
-
-    def __repr__(self):
-        return '<DNodeList: %s>' % self.dumps()
-
-    def __str__(self):
-        return '<DNodeList: %s>' % self.dumps()
-
-    def __setitem__(self, key, value):
-        assert isinstance(key, int)
-        super(DNodeList, self).__setitem__(key, value)
-        if isinstance(value, DNode):
-            value = value.data
-        self.parent.data[self.name][key] = value
-
-    def dumps(self):
-        return json.dumps(self.data, default=lambda obj: obj.data)
-
     @property
-    def items(self):
-        return list(self)
+    def json(self):
+        return self._dumps()
 
-    @property
-    def data(self):
-        return self
+    def pprint(self):
+        pprint.pprint(self.data)
 
+    def load_data(self, data):
+        if not isinstance(data, dict):
+            data = json.loads(data)
+        self.data = data
 
 
 if __name__ == '__main__':
@@ -117,10 +83,15 @@ if __name__ == '__main__':
         'g': [[{'gg': 11}, {'gg': 12}], [{'gg': 21}, {'gg': 22}]],
     }
 
-    obj = DNode(data, None)
+    obj = DNode(data)
 
-    import pprint
-    pprint.pprint(obj.data)
+    print '=========== print object ==============='
+
+    obj.pprint()
+
+    print '============= print json ==============='
+
+    print obj._dumps(4)
 
     print '=========== test getattr ==============='
 
@@ -144,27 +115,16 @@ if __name__ == '__main__':
     print obj.c.c2.c22
 
     obj.d[1] = 'change_d'
-    print obj.d[1]              # failed!
+    print obj.d[1]
 
     obj.e[1].ee = 'change_e'
     print obj.e[1].ee
 
     obj.f[0][0] = 'change_f'
-    print obj.f                 # failed!
+    print obj.f[0][0]
 
     obj.g[0][0].gg = 'change_g'
-    print obj.g                 # failed!
+    print obj.g[0][0].gg
 
     print '========================================'
-
-    # todo: solution make a DNodeList class
-
-
-    e0 = obj.e[0]
-    print e0
-    print e0.dumps()
-
-    a = DNodeList([2, 3, 4])
-    json.dumps(a)
-
 
