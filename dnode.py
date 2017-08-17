@@ -1,11 +1,14 @@
-# dnode v0.11
+# dnode
 
 import json
 import pprint
 
 
+VERSION = '0.13'
+
+
 class DNode(object):
-    data = {}
+    _data = {}
 
     def __init__(self, data):
         self.load_data(data)
@@ -17,30 +20,30 @@ class DNode(object):
         return '<DNode: %s>' % self.json
 
     def __getattr__(self, item):
-        if item == 'data':
+        if item == '_data':
             raise AttributeError
 
         if item not in self.fields:
             raise AttributeError
 
-        value = self.data[item]
+        value = self._data[item]
 
         val = self._get_node_value(value)
 
-        self.data[item] = val
+        self._data[item] = val
 
         return val
 
     def __setattr__(self, key, value):
 
-        if key == 'data' or key not in self.fields:
+        if key == '_data' or key not in self.fields:
             return super(DNode, self).__setattr__(key, value)
 
-        self.data[key] = value
+        self._data[key] = value
 
     @property
     def fields(self):
-        return self.data.keys()
+        return self._data.keys()
 
     @property
     def json(self):
@@ -58,8 +61,10 @@ class DNode(object):
         else:
             return value
 
-    def _dumps(self, indent=None):
-        return json.dumps(self, indent=indent, default=lambda obj: obj.data)
+    def _dumps(self, *args, **kwargs):
+        if 'default' not in kwargs:
+            kwargs['default'] = lambda obj: obj._data if hasattr(obj, '_data') else None
+        return json.dumps(self, *args, **kwargs)
 
     def _touch_all_fields(self):
         for field in self.fields:
@@ -69,15 +74,15 @@ class DNode(object):
 
     def pprint(self):
         self._touch_all_fields()
-        pprint.pprint(self.data)
+        pprint.pprint(self._data)
 
     def load_data(self, data):
         if not isinstance(data, dict):
             data = json.loads(data)
-        self.data = data
+        self._data = data
 
     def clear(self):
-        for key, value in self.data.iteritems():
+        for key, value in self._data.iteritems():
             if isinstance(value, DNode):
                 value.clear()
                 continue
@@ -93,7 +98,7 @@ class DNode(object):
             else:
                 null_value = None
 
-            self.data[key] = null_value
+            self._data[key] = null_value
 
 
 if __name__ == '__main__':
@@ -151,10 +156,14 @@ if __name__ == '__main__':
     obj.g[0][0].gg = 'change_g'
     print obj.g[0][0].gg
 
+    print '======== test set non-json type ========='
+
+    obj.a = {1, 2, 3}
+    print obj.json
+
     print '============== test clear ==============='
 
     obj.clear()
-
     obj.pprint()
 
     print '========================================='
