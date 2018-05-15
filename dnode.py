@@ -47,7 +47,7 @@ class DNode(object):
 
     @property
     def json(self):
-        return self._dumps()
+        return self.dumps(4)
 
     def _get_node_value(self, value):
 
@@ -61,7 +61,7 @@ class DNode(object):
         else:
             return value
 
-    def _dumps(self, *args, **kwargs):
+    def dumps(self, *args, **kwargs):
         if 'default' not in kwargs:
             kwargs['default'] = lambda obj: obj._data if hasattr(obj, '_data') else None
         return json.dumps(self, *args, **kwargs)
@@ -121,7 +121,7 @@ if __name__ == '__main__':
 
     print '============= print json ==============='
 
-    print obj._dumps(4)
+    print obj.dumps(4)
 
     print '=========== test getattr ==============='
 
