@@ -20,7 +20,7 @@ obj.pprint()
 
 print '============= print json ==============='
 
-print obj._dumps(4)
+print obj.json
 
 print '=========== test getattr ==============='
 
