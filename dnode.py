@@ -2,9 +2,10 @@
 
 import json
 import pprint
+import copy
 
 
-VERSION = '0.13'
+VERSION = '0.15'
 
 
 class DNode(object):
@@ -47,7 +48,7 @@ class DNode(object):
 
     @property
     def json(self):
-        return self.dumps(4)
+        return self.dumps(indent=4)
 
     def _get_node_value(self, value):
 
@@ -82,7 +83,7 @@ class DNode(object):
         self._data = data
 
     def clear(self):
-        for key, value in self._data.iteritems():
+        for key, value in self._data.items():
             if isinstance(value, DNode):
                 value.clear()
                 continue
@@ -101,6 +102,22 @@ class DNode(object):
             self._data[key] = null_value
 
 
+class SMNode(DNode):
+
+    STRUCT_FIELDS = set([])
+
+    def __setattr__(self, key, value):
+
+        if key in SMNode.STRUCT_FIELDS:
+            self._data[key] = value
+            return
+
+        super(SMNode, self).__setattr__(key, value)
+
+    def __copy__(self):
+        return copy.deepcopy(self)
+
+
 if __name__ == '__main__':
 
     data = {
@@ -115,56 +132,66 @@ if __name__ == '__main__':
 
     obj = DNode(data)
 
-    print '=========== print object ==============='
+    print('=========== print object ===============')
 
     obj.pprint()
 
-    print '============= print json ==============='
+    print('============= print json ===============')
 
-    print obj.dumps(4)
+    print(obj.dumps(indent=4))
 
-    print '=========== test getattr ==============='
+    print('=========== test getattr ===============')
 
-    print obj.a
-    print obj.b.b1
-    print obj.c.c2
-    print obj.d[1]
-    print obj.e[1].ee
-    print obj.f[0][0]
-    print obj.g[0][0].gg
+    print(obj.a)
+    print(obj.b.b1)
+    print(obj.c.c2)
+    print(obj.d[1])
+    print(obj.e[1].ee)
+    print(obj.f[0][0])
+    print(obj.g[0][0].gg)
 
-    print '=========== test setattr ==============='
+    print('=========== test setattr ===============')
 
     obj.a = 'change_a'
-    print obj.a
+    print(obj.a)
 
     obj.b.b1 = 'change_b'
-    print obj.b.b1
+    print(obj.b.b1)
 
     obj.c.c2.c22 = 'change_c'
-    print obj.c.c2.c22
+    print(obj.c.c2.c22)
 
     obj.d[1] = 'change_d'
-    print obj.d[1]
+    print(obj.d[1])
 
     obj.e[1].ee = 'change_e'
-    print obj.e[1].ee
+    print(obj.e[1].ee)
 
     obj.f[0][0] = 'change_f'
-    print obj.f[0][0]
+    print(obj.f[0][0])
 
     obj.g[0][0].gg = 'change_g'
-    print obj.g[0][0].gg
+    print(obj.g[0][0].gg)
 
-    print '======== test set non-json type ========='
+    print('======== test set non-json type =========')
 
     obj.a = {1, 2, 3}
-    print obj.json
+    print(obj.json)
 
-    print '============== test clear ==============='
+    print('============== test clear ===============')
 
     obj.clear()
     obj.pprint()
 
-    print '========================================='
+    print('--------------- test SM -----------------')
+
+    print('========= test STRUCT_FIELDS ============')
+
+    obj = SMNode({})
+    SMNode.STRUCT_FIELDS = set(['aaa', 'bbb'])
+    obj.aaa = 123
+    print(obj.json)
+
+    print('=========================================')
+
 
