@@ -5,7 +5,7 @@ import pprint
 import copy
 
 
-VERSION = '0.15'
+VERSION = '0.16'
 
 
 class DNode(object):
@@ -19,6 +19,13 @@ class DNode(object):
 
     def __str__(self):
         return '<DNode: %s>' % self.json
+
+    def __eq__(self, other):
+        if isinstance(other, DNode):
+            return self._data == other._data
+        if isinstance(other, dict):
+            return self._data == other
+        return False
 
     def __getattr__(self, item):
         if item == '_data':
@@ -120,6 +127,9 @@ class SMNode(DNode):
 
 if __name__ == '__main__':
 
+    # pip install dnode
+    # from dnode import DNode
+
     data = {
         'a': 1,
         'b': {'b1': 3},
@@ -138,59 +148,60 @@ if __name__ == '__main__':
 
     print('============= print json ===============')
 
-    print(obj.dumps(indent=4))
+    print(obj.json)  # or print(obj.dumps(indent=4))
 
     print('=========== test getattr ===============')
 
-    print(obj.a)
-    print(obj.b.b1)
-    print(obj.c.c2)
-    print(obj.d[1])
-    print(obj.e[1].ee)
-    print(obj.f[0][0])
-    print(obj.g[0][0].gg)
+    assert obj.a == 1
+    assert obj.b.b1 == 3
+    assert obj.c.c2 == {'c22': 22} == DNode({'c22': 22})
+    assert obj.d[1] == 'd2'
+    assert obj.e[1].ee == 2
+    assert obj.f[0][0] == 'f11'
+    assert obj.g[0][0].gg == 11
 
     print('=========== test setattr ===============')
 
     obj.a = 'change_a'
-    print(obj.a)
-
     obj.b.b1 = 'change_b'
-    print(obj.b.b1)
-
     obj.c.c2.c22 = 'change_c'
-    print(obj.c.c2.c22)
-
     obj.d[1] = 'change_d'
-    print(obj.d[1])
-
     obj.e[1].ee = 'change_e'
-    print(obj.e[1].ee)
-
     obj.f[0][0] = 'change_f'
-    print(obj.f[0][0])
-
     obj.g[0][0].gg = 'change_g'
-    print(obj.g[0][0].gg)
+
+    data = json.loads(obj.json)
+    assert data['a'] == 'change_a'
+    assert data['b']['b1'] == 'change_b'
+    assert data['c']['c2']['c22'] == 'change_c'
+    assert data['d'][1] == 'change_d'
+    assert data['e'][1]['ee'] == 'change_e'
+    assert data['f'][0][0] == 'change_f'
+    assert data['g'][0][0]['gg'] == 'change_g'
 
     print('======== test set non-json type =========')
 
     obj.a = {1, 2, 3}
-    print(obj.json)
+    data = json.loads(obj.json)
+    assert data['a'] == None
 
     print('============== test clear ===============')
 
     obj.clear()
     obj.pprint()
 
-    print('--------------- test SM -----------------')
+    print('============= test finish! ==============')
+
+    print('\n\n-------------- test SMNode ---------------')
 
     print('========= test STRUCT_FIELDS ============')
 
     obj = SMNode({})
     SMNode.STRUCT_FIELDS = set(['aaa', 'bbb'])
     obj.aaa = 123
-    print(obj.json)
+    obj.ccc = 456
+    print(obj.json)  
+    print('`ccc` should not in the output')
 
     print('=========================================')
 

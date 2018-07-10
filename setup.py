@@ -6,10 +6,10 @@ setup(
     name='dnode',
     version=dnode.VERSION,
     description='read/write json as a object',
-    long_description='read/write json as a object',
-    author='TaoJY',
+    long_description=open('README.md').read(),
+    author='tao.py',
     author_email='taojy123@163.com',
-    maintainer='TaoJY',
+    maintainer='tao.py',
     maintainer_email='taojy123@163.com',
     license='MIT License',
     py_modules=['dnode'],
@@ -18,8 +18,8 @@ setup(
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: Implementation',
-        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Software Development :: Libraries'
     ],
 )
