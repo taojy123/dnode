@@ -2,7 +2,7 @@
 
 `$ pip install dnode`
 
-```
+```python
 
 from dnode import DNode
 

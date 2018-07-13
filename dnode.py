@@ -7,7 +7,7 @@ import six
 import logging
 
 
-VERSION = '0.17'
+VERSION = '0.18'
 
 
 class DNode(object):

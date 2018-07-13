@@ -4,29 +4,11 @@ from setuptools import setup
 import dnode
 
 
-long_description = """
-$ pip install dnode
+try:
+    long_description = open('README.md').read()
+except Exception as e:
+    long_description = ''
 
-from dnode import DNode
-data = {
-    'a': 1,
-    'b': {'b1': 3},
-    'c': {'c1': 1, 'c2': {'c22': 22}},
-    'd': ['d1', 'd2', 'd3'],
-    'e': [{'ee': 1}, {'ee': 2}, {'ee': 3}],
-    'f': [['f11', 'f12'], ['f21', 'f22']],
-    'g': [[{'gg': 11}, {'gg': 12}], [{'gg': 21}, {'gg': 22}]],
-}
-obj = DNode(data)
-
-assert obj.a == 1
-assert obj.d[1] == 'd2'
-
-obj.b.b1 = 'change_b'
-data = obj.serialize()
-assert data['b']['b1'] == 'change_b'
-
-"""
 
 setup(
     name='dnode',
