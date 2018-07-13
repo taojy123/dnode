@@ -1,24 +1,37 @@
-# dnode
+#coding=utf8
 
 import json
 import pprint
 import copy
+import six
+import logging
 
 
-VERSION = '0.16'
+VERSION = '0.17'
 
 
 class DNode(object):
+    """ read and write json as a object
+    """
+
     _data = {}
 
+    def __new__(cls, data):
+        data = cls._prepare_data(data)
+        if isinstance(data, list):
+            return [cls(item) for item in data]
+        return object.__new__(cls)
+
     def __init__(self, data):
-        self.load_data(data)
+        data = self._prepare_data(data)
+        assert isinstance(data, dict)
+        self._data = data
 
     def __repr__(self):
-        return '<DNode: %s>' % self.json
+        return '<DNode: %s>' % self.dumps()
 
     def __str__(self):
-        return '<DNode: %s>' % self.json
+        return '<DNode: %s>' % self.dumps()
 
     def __eq__(self, other):
         if isinstance(other, DNode):
@@ -49,6 +62,16 @@ class DNode(object):
 
         self._data[key] = value
 
+    @staticmethod
+    def _prepare_data(data):
+        if isinstance(data, six.string_types):
+            try:
+                data = json.loads(data)
+            except Exception as e:
+                logging.error('Load data failed! %s' % data)
+                raise e
+        return data
+
     @property
     def fields(self):
         return self._data.keys()
@@ -69,25 +92,24 @@ class DNode(object):
         else:
             return value
 
-    def dumps(self, *args, **kwargs):
-        if 'default' not in kwargs:
-            kwargs['default'] = lambda obj: obj._data if hasattr(obj, '_data') else None
-        return json.dumps(self, *args, **kwargs)
-
     def _touch_all_fields(self):
         for field in self.fields:
             value = getattr(self, field)
             if isinstance(value, DNode):
                 value._touch_all_fields()
 
+    def dumps(self, *args, **kwargs):
+        if 'default' in kwargs:
+            logging.warning('The default param of dumps will be replaced!')
+        kwargs['default'] = lambda obj: obj._data if hasattr(obj, '_data') else None
+        return json.dumps(self, *args, **kwargs)
+
+    def serialize(self):
+        return json.loads(self.json)
+
     def pprint(self):
         self._touch_all_fields()
         pprint.pprint(self._data)
-
-    def load_data(self, data):
-        if not isinstance(data, dict):
-            data = json.loads(data)
-        self._data = data
 
     def clear(self):
         for key, value in self._data.items():
@@ -110,6 +132,10 @@ class DNode(object):
 
 
 class SMNode(DNode):
+    """ This class of node is designed for SM
+    1. add `STRUCT_FIELDS` into class, only fields in STRUCT_FIELDS can be changed
+    2. use deepcopy
+    """
 
     STRUCT_FIELDS = set([])
 
@@ -130,6 +156,12 @@ if __name__ == '__main__':
     # pip install dnode
     # from dnode import DNode
 
+    print('==============================================================================')
+    print('========================== DNode Run For Test ================================')
+    print('==============================================================================')
+
+    print('============== load data ===============')
+
     data = {
         'a': 1,
         'b': {'b1': 3},
@@ -142,13 +174,18 @@ if __name__ == '__main__':
 
     obj = DNode(data)
 
+    print(obj.serialize())
+    assert obj.serialize() == data
+
     print('=========== print object ===============')
 
+    print(obj)
     obj.pprint()
 
     print('============= print json ===============')
 
-    print(obj.json)  # or print(obj.dumps(indent=4))
+    print(obj.json)  
+    # or print(obj.dumps(indent=4))
 
     print('=========== test getattr ===============')
 
@@ -170,7 +207,7 @@ if __name__ == '__main__':
     obj.f[0][0] = 'change_f'
     obj.g[0][0].gg = 'change_g'
 
-    data = json.loads(obj.json)
+    data = obj.serialize()
     assert data['a'] == 'change_a'
     assert data['b']['b1'] == 'change_b'
     assert data['c']['c2']['c22'] == 'change_c'
@@ -182,7 +219,7 @@ if __name__ == '__main__':
     print('======== test set non-json type =========')
 
     obj.a = {1, 2, 3}
-    data = json.loads(obj.json)
+    data = obj.serialize()
     assert data['a'] == None
 
     print('============== test clear ===============')
@@ -190,7 +227,17 @@ if __name__ == '__main__':
     obj.clear()
     obj.pprint()
 
-    print('============= test finish! ==============')
+    print('============== list init ================')
+
+    data = '[ {"a": 1}, [{"b": 2}, {"c": 3}] ]'
+    rs = DNode(data)
+    print(rs)
+    assert isinstance(rs, list)
+    assert rs[0].a == 1
+    assert rs[1][0].b == 2
+    assert rs[1][1].c == 3
+
+    print('=========================================')
 
     print('\n\n-------------- test SMNode ---------------')
 

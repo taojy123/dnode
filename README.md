@@ -7,6 +7,8 @@
 from dnode import DNode
 
 
+print('============== load data ===============')
+
 data = {
     'a': 1,
     'b': {'b1': 3},
@@ -19,68 +21,83 @@ data = {
 
 obj = DNode(data)
 
+print(obj.serialize())
+assert obj.serialize() == data
+
 print('=========== print object ===============')
 
+print(obj)
 obj.pprint()
 
 print('============= print json ===============')
 
-print(obj.dumps(indent=4))
+print(obj.json)  
+# or print(obj.dumps(indent=4))
 
 print('=========== test getattr ===============')
 
-print(obj.a)
-print(obj.b.b1)
-print(obj.c.c2)
-print(obj.d[1])
-print(obj.e[1].ee)
-print(obj.f[0][0])
-print(obj.g[0][0].gg)
+assert obj.a == 1
+assert obj.b.b1 == 3
+assert obj.c.c2 == {'c22': 22} == DNode({'c22': 22})
+assert obj.d[1] == 'd2'
+assert obj.e[1].ee == 2
+assert obj.f[0][0] == 'f11'
+assert obj.g[0][0].gg == 11
 
 print('=========== test setattr ===============')
 
 obj.a = 'change_a'
-print(obj.a)
-
 obj.b.b1 = 'change_b'
-print(obj.b.b1)
-
 obj.c.c2.c22 = 'change_c'
-print(obj.c.c2.c22)
-
 obj.d[1] = 'change_d'
-print(obj.d[1])
-
 obj.e[1].ee = 'change_e'
-print(obj.e[1].ee)
-
 obj.f[0][0] = 'change_f'
-print(obj.f[0][0])
-
 obj.g[0][0].gg = 'change_g'
-print(obj.g[0][0].gg)
+
+data = obj.serialize()
+assert data['a'] == 'change_a'
+assert data['b']['b1'] == 'change_b'
+assert data['c']['c2']['c22'] == 'change_c'
+assert data['d'][1] == 'change_d'
+assert data['e'][1]['ee'] == 'change_e'
+assert data['f'][0][0] == 'change_f'
+assert data['g'][0][0]['gg'] == 'change_g'
 
 print('======== test set non-json type =========')
 
 obj.a = {1, 2, 3}
-print(obj.json)
+data = obj.serialize()
+assert data['a'] == None
 
 print('============== test clear ===============')
 
 obj.clear()
 obj.pprint()
 
-print('--------------- test SM -----------------')
+print('============== list init ================')
+
+data = '[ {"a": 1}, [{"b": 2}, {"c": 3}] ]'
+rs = DNode(data)
+print(rs)
+assert isinstance(rs, list)
+assert rs[0].a == 1
+assert rs[1][0].b == 2
+assert rs[1][1].c == 3
+
+print('=========================================')
+
+print('\n\n-------------- test SMNode ---------------')
 
 print('========= test STRUCT_FIELDS ============')
 
 obj = SMNode({})
 SMNode.STRUCT_FIELDS = set(['aaa', 'bbb'])
 obj.aaa = 123
-print(obj.json)
+obj.ccc = 456
+print(obj.json)  
+print('`ccc` should not in the output')
 
 print('=========================================')
-
 
 
 ```
