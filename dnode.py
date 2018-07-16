@@ -7,7 +7,7 @@ import six
 import logging
 
 
-VERSION = '0.18'
+VERSION = '0.19'
 
 
 class DNode(object):
@@ -154,7 +154,7 @@ class SMNode(DNode):
 if __name__ == '__main__':
 
     # pip install dnode
-    # from dnode import DNode
+    # from dnode import *
 
     print('==============================================================================')
     print('========================== DNode Run For Test ================================')

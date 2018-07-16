@@ -4,7 +4,7 @@
 
 ```python
 
-from dnode import DNode
+from dnode import *
 
 
 print('============== load data ===============')
