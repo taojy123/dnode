@@ -1,7 +1,11 @@
 #coding=utf8
 
 from setuptools import setup
-import dnode
+
+try:
+    from dnode import VERSION
+except:
+    VERSION = ''
 
 
 try:
@@ -12,7 +16,7 @@ except Exception as e:
 
 setup(
     name='dnode',
-    version=dnode.VERSION,
+    version=VERSION,
     description='read/write json as a object | 像读写对象属性一样读写 json',
     long_description=long_description,
     long_description_content_type="text/markdown",
