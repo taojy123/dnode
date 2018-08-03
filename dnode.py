@@ -7,10 +7,123 @@ import six
 import logging
 
 
-VERSION = '0.2.3'
+VERSION = '0.2.4'
 
 
-class DNode(object):
+class CompatibleWithDict(object):
+    """ 兼容 dict 方式处理数据
+    """
+
+    def clear(self, *args, **kwargs):
+        """ D.clear() -> None.  Remove all items from D. """
+        return self._data.clear(*args, **kwargs)
+
+    def copy(self, *args, **kwargs):
+        """ D.copy() -> a shallow copy of D """
+        return self._data.copy(*args, **kwargs)
+
+    @staticmethod # known case
+    def fromkeys(*args, **kwargs): # real signature unknown
+        """ Returns a new dict with keys from iterable and values equal to value. """
+        return self._data.fromkeys(*args, **kwargs)
+
+    def get(self, *args, **kwargs):
+        """ D.get(k[,d]) -> D[k] if k in D, else d.  d defaults to None. """
+        return self._data.get(*args, **kwargs)
+
+    def items(self, *args, **kwargs):
+        """ D.items() -> a set-like object providing a view on D's items """
+        return self._data.items(*args, **kwargs)
+
+    def keys(self, *args, **kwargs):
+        """ D.keys() -> a set-like object providing a view on D's keys """
+        return self._data.keys(*args, **kwargs)
+
+    def pop(self, *args, **kwargs):
+        """
+        D.pop(k[,d]) -> v, remove specified key and return the corresponding value.
+        If key is not found, d is returned if given, otherwise KeyError is raised
+        """
+        return self._data.pop(*args, **kwargs)
+
+    def popitem(self, *args, **kwargs):
+        """
+        D.popitem() -> (k, v), remove and return some (key, value) pair as a
+        2-tuple; but raise KeyError if D is empty.
+        """
+        return self._data.popitem(*args, **kwargs)
+
+    def setdefault(self, *args, **kwargs):
+        """ D.setdefault(k[,d]) -> D.get(k,d), also set D[k]=d if k not in D """
+        return self._data.setdefault(*args, **kwargs)
+
+    def update(self, *args, **kwargs):
+        """
+        D.update([E, ]**F) -> None.  Update D from dict/iterable E and F.
+        If E is present and has a .keys() method, then does:  for k in E: D[k] = E[k]
+        If E is present and lacks a .keys() method, then does:  for k, v in E: D[k] = v
+        In either case, this is followed by: for k in F:  D[k] = F[k]
+        """
+        return self._data.update(*args, **kwargs)
+
+    def values(self, *args, **kwargs):
+        """ D.values() -> an object providing a view on D's values """
+        return self._data.values(*args, **kwargs)
+
+    def __contains__(self, *args, **kwargs):
+        """ True if D has a key k, else False. """
+        return self._data.__contains__(*args, **kwargs)
+
+    def __delitem__(self, *args, **kwargs):
+        """ Delete self[key]. """
+        return self._data.__delitem__(*args, **kwargs)
+
+    def __eq__(self, *args, **kwargs):
+        """ Return self==value. """
+        return self._data.__eq__(*args, **kwargs)
+
+    def __getitem__(self, *args, **kwargs):
+        """ x.__getitem__(y) <==> x[y] """
+        return self._data.__getitem__(*args, **kwargs)
+
+    def __ge__(self, *args, **kwargs):
+        """ Return self>=value. """
+        return self._data.__ge__(*args, **kwargs)
+
+    def __gt__(self, *args, **kwargs):
+        """ Return self>value. """
+        return self._data.__gt__(*args, **kwargs)
+
+    def __iter__(self, *args, **kwargs):
+        return self._data.__iter__(*args, **kwargs)
+
+    def __len__(self, *args, **kwargs):
+        return self._data.__len__(*args, **kwargs)
+
+    def __le__(self, *args, **kwargs):
+        """ Return self<=value. """
+        return self._data.__le__(*args, **kwargs)
+
+    def __lt__(self, *args, **kwargs):
+        """ Return self<value. """
+        return self._data.__lt__(*args, **kwargs)
+
+    def __ne__(self, *args, **kwargs):
+        """ Return self!=value. """
+        return self._data.__ne__(*args, **kwargs)
+
+    def __setitem__(self, *args, **kwargs):
+        """ Set self[key] to value. """
+        return self._data.__setitem__(*args, **kwargs)
+
+    def __sizeof__(self, *args, **kwargs):
+        """ D.__sizeof__() -> size of D in memory, in bytes """
+        return self._data.__sizeof__(*args, **kwargs)
+
+    __hash__ = None
+
+
+class DNode(CompatibleWithDict):
     """ read and write json as a object
     """
 
@@ -42,10 +155,10 @@ class DNode(object):
 
     def __getattr__(self, item):
         if item == '_data':
-            raise AttributeError
+            raise AttributeError('can not get _data of DNode')
 
         if item not in self.fields:
-            raise AttributeError
+            raise AttributeError('%s field not in DNode' % item)
 
         value = self._data[item]
 
