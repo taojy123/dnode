@@ -7,7 +7,7 @@ import six
 import logging
 
 
-VERSION = '0.2.4'
+VERSION = '0.2.5'
 
 
 class CompatibleWithDict(object):

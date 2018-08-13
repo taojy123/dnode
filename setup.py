@@ -2,11 +2,6 @@
 
 from setuptools import setup
 
-try:
-    from dnode import VERSION
-except:
-    VERSION = ''
-
 
 try:
     long_description = open('README.md').read()
@@ -16,7 +11,7 @@ except Exception as e:
 
 setup(
     name='dnode',
-    version=VERSION,
+    version='0.2.5',
     description='read/write json as a object | 像读写对象属性一样读写 json',
     long_description=long_description,
     long_description_content_type="text/markdown",
