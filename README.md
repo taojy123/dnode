@@ -1,5 +1,8 @@
 # dnode
 
+[![PyPI Downloads](https://pypistats.com/badge/dnode.png)](https://pypistats.com/package/dnode)
+
+
 `$ pip install dnode`
 
 ```python
