@@ -1,7 +1,5 @@
 # dnode
 
-[![PyPI Downloads](https://pypistats.com/badge/dnode.png)](https://pypistats.com/package/dnode)
-
 
 `$ pip install dnode`
 
@@ -24,8 +22,8 @@ data = {
 
 obj = DNode(data)
 
-print(obj.serialize())
-assert obj.serialize() == data
+print(obj.to_dict())
+assert obj.to_dict() == data
 
 print('=========== print object ===============')
 
@@ -46,6 +44,7 @@ assert obj.d[1] == 'd2'
 assert obj.e[1].ee == 2
 assert obj.f[0][0] == 'f11'
 assert obj.g[0][0].gg == 11
+assert obj.h == None
 
 print('=========== test setattr ===============')
 
@@ -57,7 +56,7 @@ obj.e[1].ee = 'change_e'
 obj.f[0][0] = 'change_f'
 obj.g[0][0].gg = 'change_g'
 
-data = obj.serialize()
+data = obj.to_dict()
 assert data['a'] == 'change_a'
 assert data['b']['b1'] == 'change_b'
 assert data['c']['c2']['c22'] == 'change_c'
@@ -69,7 +68,7 @@ assert data['g'][0][0]['gg'] == 'change_g'
 print('======== test set non-json type =========')
 
 obj.a = {1, 2, 3}
-data = obj.serialize()
+data = obj.to_dict()
 assert data['a'] == None
 
 print('============== test clear ===============')

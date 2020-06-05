@@ -11,7 +11,7 @@ except Exception as e:
 
 setup(
     name='dnode',
-    version='0.2.5',
+    version='0.2.6',
     description='read/write json as a object | 像读写对象属性一样读写 json',
     long_description=long_description,
     long_description_content_type="text/markdown",

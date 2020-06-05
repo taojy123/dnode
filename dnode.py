@@ -154,11 +154,12 @@ class DNode(CompatibleWithDict):
         return False
 
     def __getattr__(self, item):
-        if item == '_data':
-            raise AttributeError('can not get _data of DNode')
+
+        assert item != '_data', 'DNode object must have `_data` property!'
 
         if item not in self.fields:
-            raise AttributeError('%s field not in DNode' % item)
+            # raise AttributeError('%s field not in DNode' % item)
+            return None
 
         value = self._data[item]
 
@@ -217,7 +218,7 @@ class DNode(CompatibleWithDict):
         kwargs['default'] = lambda obj: obj._data if hasattr(obj, '_data') else None
         return json.dumps(self, *args, **kwargs)
 
-    def serialize(self):
+    def to_dict(self):
         return json.loads(self.json)
 
     def pprint(self):
@@ -287,8 +288,8 @@ if __name__ == '__main__':
 
     obj = DNode(data)
 
-    print(obj.serialize())
-    assert obj.serialize() == data
+    print(obj.to_dict())
+    assert obj.to_dict() == data
 
     print('=========== print object ===============')
 
@@ -309,6 +310,7 @@ if __name__ == '__main__':
     assert obj.e[1].ee == 2
     assert obj.f[0][0] == 'f11'
     assert obj.g[0][0].gg == 11
+    assert obj.h == None
 
     print('=========== test setattr ===============')
 
@@ -320,7 +322,7 @@ if __name__ == '__main__':
     obj.f[0][0] = 'change_f'
     obj.g[0][0].gg = 'change_g'
 
-    data = obj.serialize()
+    data = obj.to_dict()
     assert data['a'] == 'change_a'
     assert data['b']['b1'] == 'change_b'
     assert data['c']['c2']['c22'] == 'change_c'
@@ -332,7 +334,7 @@ if __name__ == '__main__':
     print('======== test set non-json type =========')
 
     obj.a = {1, 2, 3}
-    data = obj.serialize()
+    data = obj.to_dict()
     assert data['a'] == None
 
     print('============== test clear ===============')
